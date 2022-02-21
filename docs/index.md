@@ -19,16 +19,16 @@ According to the participation regulation of the challenge (Mohanty and Khandelw
 We distribute the jobs equally across time and team members. K-Means and Spectral Clustering can be similar in implementation if we make use of Scikit-Learn (Pedregosa et al. 2011), while deep learning based model may be more complex. Hence, we allocate the labor accordingly.
  
 ### Overall Gantt Chart
-![overall gantt chart](https://github.com/ktxlh/food-recognition/blob/cc9cec95ea204835ea93804a7d2c8da8df45ccd7/docs/assets/gantt-overall.png)
+![overall gantt chart](docs/assets/gantt-overall.png)
 
 ### Phase One: Project Team Creation and Proposal
-![phase 1 gantt chart](https://github.com/ktxlh/food-recognition/blob/cc9cec95ea204835ea93804a7d2c8da8df45ccd7/docs/assets/gantt-ph1.png)
+![phase 1 gantt chart](docs/assets/gantt-ph1.png)
  
 ### Phase Two: K-Means, Spectral Clustring, MaskRCNN, and Midterm Report
-![phase 2 gantt chart](https://github.com/ktxlh/food-recognition/blob/cc9cec95ea204835ea93804a7d2c8da8df45ccd7/docs/assets/gantt-ph2.png)
+![phase 2 gantt chart](docs/assets/gantt-ph2.png)
  
 ### Phase Three: DeepLab V3 and Final Report
-![phase 3 gantt chart](https://github.com/ktxlh/food-recognition/blob/cc9cec95ea204835ea93804a7d2c8da8df45ccd7/docs/assets/gantt-ph3.png)
+![phase 3 gantt chart](docs/assets/gantt-ph3.png)
  
 ## References
 * Chen, Liang-Chieh, George Papandreou, Florian Schroff, and Hartwig Adam. "Rethinking atrous convolution for semantic image segmentation." arXiv preprint arXiv:1706.05587 (2017).
