@@ -7,32 +7,55 @@ Our dataset comes from AIcrowd Food Recognition Benchmark, an ongoing food recog
  
 ## Methods
 We will implement both unsupervised and supervised machine learning algorithms and compare their results. For unsupervised learning, we will implement two types of feature extractors: (1) color features extractor through PCA (2) color and spatial information extractor through RBF kernel. Then, we will use k-means and spectral clustering for segmentation. Moreover, we will try to initial center with both random and k-means++ methods. As to supervised learning, we will use MaskRCNN (He et al. 2017) and DeepLab V3 (Chen et al. 2017). No prior feature extraction is needed for these two models.  
- 
-## Potential Results and Discussion
-This project follows AIcrowd’s evaluation method, which is COCO detection evaluation metrics. To be more specific, we will evaluate the models by average precision (AP) and average recall (AR) with 0.5:0.05:0.95 Intersection over Union (IoU) threshold.
+### Unsupervised Instance Segmentation
+#### K-means
+
+#### Spectral Clustering (Normalized Cut)
+We also assessed graph-based segmentation techniques on this task. Specifically, we chose to implement the normalized cut algorithm (Shi et al., 2020), in which each image is represented as a weighted undirected complete graph, and the instance segmentation problem is then formulated as a graph partitioning problem, so that the vertices in the same sets have high similarity and vertices in two different sets have low similarity. Since finding tshe optimal min-cut is a NP-hard problem, normalized cut computes an approximate solution by solving the generalized eigenvalue problem on the affinity matrix. The overall algorithm can be described as follows:
+
+1. Run K-means clustering with a relative big K on the original image with color and spatial location as features to obtain an oversegmentation of the image (superpixels). This step would significantly improve the computational efficiency, while preserving the features of the main groups/regions of pixels.
+2. Construct a Region Adjacency Graph on the segments from step 1, where the features of each node is represented by the average color of pixels in the region, while the weight between two adjacent nodes is given by their exponential similarity of Euclidean distance $e^{-|c_1-c_2|^{2} / \sigma}$.
+3. Compute the unnormalized Laplacian $L$, and then solve the generalized eigenproblem $Lx=\lambda D x$ for eigenvectors with the smallest eigenvalues.
+4. Use the eigenvector with the second smallest eigenvalue to bipartition the graph.
+5. Check the stability of the cut, and recursively reparitition the segmened parts if necessary.
+
+We used scikit-learn/scikit-image for performing the K-means oversegmentation, generating the Region Adjacency Graph, solving the eigenproblem, performing the 2-way normalized cut, and visualizing the segmentation results. Specifically, there are several parameters that might impact the overall quality of the segmentation results:
+- compactness: Controls the balance between color proximity and space proximity in the oversegmentation step.
+- n_segments: Essentially serves as the $K$ in the K-means oversegmentation step.
+- ncut_threshold: Determines the stability requirement for the final graph partition.
+  
+Despite the fact that the ideal choice of each parameters vary a lot among images with instances of different scales, we chose a generally suitable parameter set for evalution: compactness=20, n_segments=400, ncut_threshold=.0001.
+
+### Supervised Instance Segmentation
+
+### Evaluation
+We follow AIcrowd's evaluation method, which is COCO detection evaluation metrics. To be more specific, we evaluate the models by average precision (AP) and average recall (AR) with 0.5:0.05:0.95 Intersection over Union (IoU) threshold. For unsupervised methods, since they are generally unable to predict specific classes, we calculate the metric without taking the class labels into consideration. In other words, a segmentation proposal will be considered as a truth positive as long as it achieves higher IoU with any of the ground-truth of food instance segmentations than the threshold. Besides, we also assess the unsupervised segmentation results using internal clustering measures such as Probabilistic Random Index (PRI), Variation of Information (VoI), and Segmentation Covering.
+
+## Results and Discussion
+<!-- This project follows AIcrowd’s evaluation method, which is COCO detection evaluation metrics. To be more specific, we will evaluate the models by average precision (AP) and average recall (AR) with 0.5:0.05:0.95 Intersection over Union (IoU) threshold.
  
 We expect supervised learning to perform better than unsupervised learning. This is due to the robust feature extractor in modern deep neural networks. Moreover, labels provide models with important clues to learn better. 
  
-According to the participation regulation of the challenge (Mohanty and Khandelwal 2021), we will report both the score we computed on 100% of the publicly released test set, as well as the one evaluated by the contest system on 40% of an unreleased extended test set.
- 
-## Timeline
-We distribute the jobs equally across time and team members. K-Means and Spectral Clustering can be similar in implementation if we make use of Scikit-Learn (Pedregosa et al. 2011), while deep learning based model may be more complex. Hence, we allocate the labor accordingly.
- 
-### Overall Gantt Chart
-![overall gantt chart](assets/gantt-overall.png)
+According to the participation regulation of the challenge (Mohanty and Khandelwal 2021), we will report both the score we computed on 100% of the publicly released test set, as well as the one evaluated by the contest system on 40% of an unreleased extended test set. -->
 
-### Phase One: Project Team Creation and Proposal
-![phase 1 gantt chart](assets/gantt-ph1.png)
- 
-### Phase Two: K-Means, Spectral Clustring, MaskRCNN, and Midterm Report
-![phase 2 gantt chart](assets/gantt-ph2.png)
- 
-### Phase Three: DeepLab V3 and Final Report
-![phase 3 gantt chart](assets/gantt-ph3.png)
- 
+### K-means
+### Normalized Cut
+As is described above, the normalized cut algorithm first use K-means to segment the image into a large number of superpixels, and then use the derived regions construct a similarity graph, after which recursive 2-way normalized cut is performed. Here gives a couple of samples output of the normalized cut algorithm, in the order of original image, superpixels, and final segmentation proposals. Each proposed region is displayed as the mean color of all pixels in the region.
+![Result Sample 1](assets/ncut_1.png)
+![Result Sample 2](assets/ncut_2.png)
+![Result Sample 3](assets/ncut_3.png)
+### Mask R-CNN
+
+### Quantitative Results
+
+
+<!-- ## Next Steps
+### Unsupervised segmentation
+unsupervised domain transfer  -->
 ## References
 * Chen, Liang-Chieh, George Papandreou, Florian Schroff, and Hartwig Adam. "Rethinking atrous convolution for semantic image segmentation." arXiv preprint arXiv:1706.05587 (2017).
 * He, Kaiming, Georgia Gkioxari, Piotr Dollár, and Ross Girshick. "Mask r-cnn." In Proceedings of the IEEE international conference on computer vision, pp. 2961-2969. 2017.
 * Lin, Tsung-Yi, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva Ramanan, Piotr Dollár, and C. Lawrence Zitnick. "Microsoft coco: Common objects in context." In European conference on computer vision, pp. 740-755. Springer, Cham, 2014.
 * Mohanty, Sharada, and Shivam Khandelwal. “Food Recognition Benchmark 2022: Challenges.” AIcrowd. Seerave Foundation, November 22, 2021. https://www.aicrowd.com/challenges/food-recognition-benchmark-2022. 
 * Pedregosa, Fabian, Gaël Varoquaux, Alexandre Gramfort, Vincent Michel, Bertrand Thirion, Olivier Grisel, Mathieu Blondel et al. "Scikit-learn: Machine learning in Python." the Journal of machine Learning research 12 (2011): 2825-2830.
+* Shi, J.; Malik, J., “Normalized cuts and image segmentation”, Pattern Analysis and Machine Intelligence, IEEE Transactions on, vol. 22, no. 8, pp. 888-905, August 2000.
