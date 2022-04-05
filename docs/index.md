@@ -61,6 +61,7 @@ Thus, We decided to set our k = 8 and p = 10 for comparasion.
 <img src="assets/kmean1.png" width="1000">
 <img src="assets/kmean2.png" width="1000">
 
+From the figures, we can find that Kmeans preserve the boundary of the instances well and have a decent performance to filter out single food. However, the second figure makes it hard to detect bread and meat, which have similar colors even if they are far from each other. This is due to the natural fact of we use Kmeans to distinguish color instead of the distance between instances.  
 ### Normalized Cut
 As is described above, the normalized cut algorithm first use K-means to segment the image into a large number of superpixels, and then use the derived regions construct a similarity graph, after which recursive 2-way normalized cut is performed. Here gives a couple of samples output of the normalized cut algorithm, in the order of original image, superpixels, and final segmentation proposals (compactness=20, n_segments=400, ncut_thresh=.001). Each proposed region is displayed as the mean color of all pixels in the region.
 ![Result Sample 1](assets/ncut_1.png)
