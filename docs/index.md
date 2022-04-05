@@ -70,7 +70,7 @@ As is described above, the normalized cut algorithm first use K-means to segment
 ![Result Sample 3](assets/ncut_3.png)
 ### Hybrid Task Cascade
 
-In supervised instance segmentation, we put the ground truch on the left, the predicted bounding box and segmentation mask on the right. We can observe that the HTC model can roughly detect, classify and segment the food in the image (e.g. salmon in the first image, meat/bread/cheese in the second image, french fried in the third image). However, the gap between the ground truch segmentation and the predicted segmentation is still obvious:
+In supervised instance segmentation, we put the ground truth on the left, the predicted bounding box and segmentation mask on the right. We can observe that the HTC model can roughly detect, classify and segment the food in the image (e.g. salmon in the first image, meat/bread/cheese in the second image, french fried in the third image). However, the gap between the ground truch segmentation and the predicted segmentation is still obvious:
 1. While the model can predict the region containing food correctly, it cannot predict the correct border in detail. For example, the groundtruch borders between the food and the background are more detailed for the salmon and the french fries in the first and third images.
 2. The model can classify the food objects in general, it still cannot map them to fine-grained categories. For example, in the second image, the model can correctly predict general classes such as "cheese" and "bread", but it cannot distinguish "soft cheese" and "hard cheese", "bread with whole wheat" and "bread".
 
