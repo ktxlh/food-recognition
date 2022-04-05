@@ -68,7 +68,12 @@ As is described above, the normalized cut algorithm first use K-means to segment
 ![Result Sample 1](assets/ncut_1.png)
 ![Result Sample 2](assets/ncut_2.png)
 ![Result Sample 3](assets/ncut_3.png)
-### Mask R-CNN
+### Hybrid Task Cascade
+<p align="center">
+<img src="assets/s-1.png" width="600">
+<img src="assets/s-2.png" width="600">
+<img src="assets/s-3.png" width="600">
+</p>
 
 ### Quantitative Results
 
