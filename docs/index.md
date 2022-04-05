@@ -88,15 +88,7 @@ In supervised instance segmentation, we put the ground truth on the left, the pr
 
 ### Quantitative Results
 <!-- Besides, we also assess the unsupervised segmentation results using internal clustering measures such as Probabilistic Random Index (PRI), Variation of Information (VoI), and Segmentation Covering. -->
-#### Supervised Instance Segmentation
 
-Following the standard COCO evluation and the guideline from the AIcrowd Food Recognition Benchmark, we report the average precision (AP) and average recall(AR) for both bounding box and segmentation mask on the official validation set, while we further average the results varying Intersection over Union (IoU) value from 0.50 to 0.95 (step = 0.05).
-
-
-| Target | AP (IoU=.50:.05:.95) | AR (IoU=.50:.05:.95) |
-| ------ | -------------------- | -------------------- |
-| BBox   | 19.5                 | 40.9                 |
-| Mask   | 21.6                 | 42.2                 |
 
 #### Unsupervised Instance Segmentation
 
@@ -107,6 +99,24 @@ We evaluate K-Means and Normalized Cut with a fixed set of parameters (for compu
 It's worth mentioning that the reported metrics for both unsupervised methods are below expectation (according to performance reports from prior works on similar tasks such as image sementic segmentation). This might because in our dataset, only food instances , and current implementations of the two unsupervised methods make no efforts to distinguish between the foreground and background, and thus might predict a lot more segmentations from the background (e.g. plate, hand, tableware, etc.), which might be a valid segmentation but not a true image instance. Also, since the evaluation module is directly adapted from pycocotools implementations for class-sensitive evaluations with minor modifications, more experiments should be conducted to investigate the correctness.
 
 For the potential next steps, the K-means algorithm can be refined by allowing adaptive parameter choosing (e.g. choose K for K-means when the Davies-Bouldin score is minimized), and the normalized cut algorithm can be refined by setting the label of small regions by sampling from neighbor pixels or using the label from neighbor nodes in the Region Adjacency Graph, rather than directly assigning to background. Besides, if time allows, we might make some attempts on unsupervised domain transfer based on neural models trained on similar tasks, which might allow better comparison with the supervised approaches.
+
+#### Supervised Instance Segmentation
+
+Following the standard COCO evluation and the guideline from the AIcrowd Food Recognition Benchmark, we report the average precision (AP) and average recall(AR) for both bounding box and segmentation mask on the official validation set, while we further average the results varying Intersection over Union (IoU) value from 0.50 to 0.95 (step = 0.05).
+
+
+| Target | AP (IoU=.50:.05:.95) | AR (IoU=.50:.05:.95) |
+| ------ | -------------------- | -------------------- |
+| BBox   | 19.5                 | 40.9                 |
+| Mask   | 21.6                 | 42.2                 |
+
+Comparing the results we get to the state-of-the-art results on COCO datasets (AP of more than 40), the gap is still big (though we are using the same data). There are several possible reasons: 
+1. Instead of detecting people and cars in daily-life images, it is more challenging to correctly detect and segment food objects, due to the similar background, color, size and texture of food images.
+2. Non-optimal hyperparameters. Due to the limitation of computation, we haven't carefully tune the hyperparameter according to the validation set. Our device limits the maximum batch size we can try (no more than 4). Also, HTC nearly doubles the training time of mask R-CNN, which makes it even harder for us to find the optimal hyperparameters.
+
+For the possible next steps, we plan to leverage more recent instance segmentation approaches which either refines HTC to achieve better results or achieve higher efficiency to make hyperparameter search eaiser. Specifically, there are several candidiate for future exploration:
+1. SCNet (Vu et al., 2021) leverages feature relay and utilizes global contextual information to explicitly target the mismatch problem in HTC:  The outputs of all the box stages are used for mask predictions during training, but only the output of the last box stage is used for mask predictions during inference. We hopt SCNet can help us directly improve the performance of HTC without extensively tuning hyperparameters.
+2. SOLO (Wang et al,. 2020) assigns categories to each pixel within an instance according to the instance’s location and size in order to form instance segmentation as a single-shot classification-solvable problem. SOLO is shown to achieve the same efficiency but higher performance on COCO datasets, we hope it can help us to speed up the training process and make hyperparameter tuning easier.
 
 ## References
 * Chen, Liang-Chieh, George Papandreou, Florian Schroff, and Hartwig Adam. "Rethinking atrous convolution for semantic image segmentation." arXiv preprint arXiv:1706.05587 (2017).
@@ -119,3 +129,5 @@ For the potential next steps, the K-means algorithm can be refined by allowing a
 * Ren, Shaoqing, Kaiming He, Ross Girshick, and Jian Sun. "Faster r-cnn: Towards real-time object detection with region proposal networks." Advances in neural information processing systems 28 (2015).
 * Girshick, Ross. "Fast r-cnn." In Proceedings of the IEEE international conference on computer vision, pp. 1440-1448. 2015.
 * Long, Jonathan, Evan Shelhamer, and Trevor Darrell. "Fully convolutional networks for semantic segmentation." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 3431-3440. 2015.
+* Vu, Thang, Haeyong Kang, and Chang D. Yoo. "Scnet: Training inference sample consistency for instance segmentation." In Proceedings of the AAAI Conference on Artificial Intelligence, vol. 35, no. 3, pp. 2701-2709. 2021.
+* Wang, Xinlong, Tao Kong, Chunhua Shen, Yuning Jiang, and Lei Li. "Solo: Segmenting objects by locations." In European Conference on Computer Vision, pp. 649-665. Springer, Cham, 2020.
