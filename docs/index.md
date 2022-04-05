@@ -6,7 +6,7 @@ Food is inseparable from our daily life. This project aims to recognize food at 
 Our dataset comes from AIcrowd Food Recognition Benchmark, an ongoing food recognition challenge provided by Seerave Foundation (Mohanty and Khandelwal 2021). We use the data from its round-2 challenge, which started in early March of 2022. AIcrowd released data for 498 food classes with 39,962 training samples and 76,491 food item annotations in MS-COCO format (Lin et al. 2014) for the 1st round of the challenge ("v2.0"). For the 2nd round ("v2.1"), they released a dataset containing a training set of 54,392 images of food items, with 100,256 annotations spread over 323 food classes. To fit our project to the challenge timeline, we mainly work with the v2.1 (round 2) data throughout this report.
  
 ## Methods
-We will implement both unsupervised and supervised machine learning algorithms and compare their results. For unsupervised learning, we will implement two types of feature extractors: (1) color features extractor through PCA (2) color and spatial information extractor through RBF kernel. Then, we will use k-means and spectral clustering for segmentation. Moreover, we will try to initial center with both random and k-means++ methods. As to supervised learning, we will use Hybrid Task Cascade based on MaskRCNN (He et al. 2017). No prior feature extraction is needed for these two models.  
+We implemented both unsupervised and supervised machine learning algorithms and compared their results. For unsupervised learning, we implemented a clustering-based method, K-means, and graph-based method, Normalized Cut. We used a color feature extractor through PCA for K-means, and a similar clustering-based pre-processing step for Normalized Cut to extract local information while reducing the computational complexity. As to supervised learning, we used Hybrid Task Cascade based on MaskRCNN (He et al. 2017), where no prior feature extraction is needed.
 ### Unsupervised Instance Segmentation
 #### K-means
 We first utilize k-means clustering to have a simple analysis of this problem. K-means aims to partition n observations into k clusters in which each observation belongs to the cluster with the nearest mean. The scikit-learn package minimizes within-cluster variances (squared Euclidean distances) to do the clustering. Besides running k-means on the raw images, we also evaluate the performance by preprocessing the figures to the compressed figures via extracting the color features through PCA.
@@ -43,8 +43,6 @@ Supervised instance segmentation has three components: detection, classification
 
 **Our Approach** In this project, we use an improved version of Mask R-CNN, called **Hybrid Task Cascade** (HTC, Chen et al., 2019). Cascade is a classic idea that boosts model performance by multi-stage refinement. In our case, cascade could be implented by the step-by-step refinement of the bounding box and the segmentation mask. (i) *Bounding Box Cascade*: Note that the regression model after RoI pooling layer locate the bounding box given a region's feature, so HTC further use the output bounding box to form a region feature, then use the RoI pooling layer and the regression model to get a refined bounding box. (ii) *Segmentation Mask Cascade*: HTC introduces an information flow between masks by enabling generating refined binary masks conditioning on previously generated masks. (iii) *Auxiliary Semantic Segmentation*: Beyond cascade, to further help the masking process to distinguish the object and the background, HTC further leverages an extra semantic segmentation branch (also a FCN) to provide extra semantic information of the whole image, then let the mask generation process condition on the semantic information of each pixel.
 
-### Evaluation
-We follow AIcrowd's evaluation method, which is COCO detection evaluation metrics. To be more specific, we evaluate the models by average precision (AP) and average recall (AR) with 0.5:0.05:0.95 Intersection over Union (IoU) threshold. For unsupervised methods, since they are generally unable to predict specific classes, we calculate the metric without taking the class labels into consideration. In other words, a segmentation proposal will be considered as a truth positive as long as it achieves higher IoU with any of the ground-truth of food instance segmentations than the threshold. Besides, we also assess the unsupervised segmentation results using internal clustering measures such as Probabilistic Random Index (PRI), Variation of Information (VoI), and Segmentation Covering.
 
 ## Results and Discussion
 <!-- This project follows AIcrowd’s evaluation method, which is COCO detection evaluation metrics. To be more specific, we will evaluate the models by average precision (AP) and average recall (AR) with 0.5:0.05:0.95 Intersection over Union (IoU) threshold.
@@ -64,10 +62,17 @@ Thus, We decided to set our k = 8 and p = 10 for comparasion.
 <img src="assets/kmean2.png" width="1000">
 
 ### Normalized Cut
-As is described above, the normalized cut algorithm first use K-means to segment the image into a large number of superpixels, and then use the derived regions construct a similarity graph, after which recursive 2-way normalized cut is performed. Here gives a couple of samples output of the normalized cut algorithm, in the order of original image, superpixels, and final segmentation proposals. Each proposed region is displayed as the mean color of all pixels in the region.
+As is described above, the normalized cut algorithm first use K-means to segment the image into a large number of superpixels, and then use the derived regions construct a similarity graph, after which recursive 2-way normalized cut is performed. Here gives a couple of samples output of the normalized cut algorithm, in the order of original image, superpixels, and final segmentation proposals (compactness=20, n_segments=400, ncut_thresh=.001). Each proposed region is displayed as the mean color of all pixels in the region.
 ![Result Sample 1](assets/ncut_1.png)
 ![Result Sample 2](assets/ncut_2.png)
 ![Result Sample 3](assets/ncut_3.png)
+One can see that the algorithm generally does a good job in differentiating food instances, while preserving the boundaries of each instances. Also, since there is no need to specify the total number of segments in the clustering result, the algorithm is able to deal with arbitraty number of instances to segment. However, this characteristic also introduces some problems, as some small segments are unnecessarily seperated. We attempted to minimize the influence by setting a threshold for the ratio of the size of each seperated region to the total size of the image. In the evaluation phase, the threshold is set to 1.5%.
+
+We further compared the segmentation results with different parameter setting.
+![ncut_comp](assets/ncut_comp.png)
+With a low compactness setting in the oversegmentation step, pixels with similar colors tend to be grouped together, rather than the pixels spatially closer to it. With a high compactness score, however, the resulting oversegmentation looks more like superpixels, as the spatial proximity highly overweigh the color similarity. Therefore, a medium compactness setup is needed for balancing the two, so as to pertain object boundaries and capture the main characteritics.
+![ncut_thresh](assets/ncut_thresh.png)
+The threshold for the n_cut algorithm basically determine when the iterative graph cut should terminate. Higher threshold will lead to early termination, which lead to higher number of segmentations. Setting a low threshold might be a generally better practice for the food instance segmentation problem, as we will not expect too fine-grained segmentation. However, setting a threshold that is too low might result in insufficient segmentation, and in extreme cases, labeling the full image into a single label when the contrast is not big enough.
 ### Hybrid Task Cascade
 
 In supervised instance segmentation, we put the ground truth on the left, the predicted bounding box and segmentation mask on the right. We can observe that the HTC model can roughly detect, classify and segment the food in the image (e.g. salmon in the first image, meat/bread/cheese in the second image, french fried in the third image). However, the gap between the ground truch segmentation and the predicted segmentation is still obvious:
@@ -81,26 +86,27 @@ In supervised instance segmentation, we put the ground truth on the left, the pr
 </p>
 
 ### Quantitative Results
-
-
-##### Supervised Instance Segmentation
+<!-- Besides, we also assess the unsupervised segmentation results using internal clustering measures such as Probabilistic Random Index (PRI), Variation of Information (VoI), and Segmentation Covering. -->
+#### Supervised Instance Segmentation
 
 Following the standard COCO evluation and the guideline from the AIcrowd Food Recognition Benchmark, we report the average precision (AP) and average recall(AR) for both bounding box and segmentation mask on the official validation set, while we further average the results varying Intersection over Union (IoU) value from 0.50 to 0.95 (step = 0.05).
 
 
-| BBox | AP (IoU=.50:.05:.95) | AR (IoU=.50:.05:.95) |
-|------|----------------------|----------------------|
-|  HTC |         19.5         |         40.9         |
+| Target | AP (IoU=.50:.05:.95) | AR (IoU=.50:.05:.95) |
+| ------ | -------------------- | -------------------- |
+| BBox   | 19.5                 | 40.9                 |
+| Mask   | 21.6                 | 42.2                 |
 
-| Mask | AP (IoU=.50:.05:.95) | AR (IoU=.50:.05:.95) |
-|------|----------------------|----------------------|
-|  HTC |         21.6         |         42.2         |
+#### Unsupervised Instance Segmentation
 
+For unsupervised methods, we generally follows the same evaluation metric as the standard supervised one, i.e. calculate AP and AR with IoU=0.50. since they are generally unable to predict specific classes, we calculate the metric without taking the class labels into consideration. In other words, a segmentation proposal will be considered as a truth positive as long as it achieves higher IoU with any of the ground-truth of food instance segmentations than the threshold. 
 
+We evaluate K-Means and Normalized Cut with a fixed set of parameters (for computational efficiency) on the full validation set (946 images). For K-Means with K=8 and P=10, inference on the validation set gives AP=0.2, AR=3.5, while Normalized Cut with compactness=20, n_segments=400, and thresh=.001 reports AP=1.7, AR=12.2. According to the reported metrics, Normalized Cut generally performs better than K-Means (with static parameter setting), which might because Normalized Cut better utilizes the spatial information of the data, and it is able to better preserve the boundaries between objects/instances.
 
-<!-- ## Next Steps
-### Unsupervised segmentation
-unsupervised domain transfer  -->
+It's worth mentioning that the reported metrics for both unsupervised methods are below expectation (according to performance reports from prior works on similar tasks such as image sementic segmentation). This might because in our dataset, only food instances , and current implementations of the two unsupervised methods make no efforts to distinguish between the foreground and background, and thus might predict a lot more segmentations from the background (e.g. plate, hand, tableware, etc.), which might be a valid segmentation but not a true image instance. Also, since the evaluation module is directly adapted from pycocotools implementations for class-sensitive evaluations with minor modifications, more experiments should be conducted to investigate the correctness.
+
+For the potential next steps, the K-means algorithm can be refined by allowing adaptive parameter choosing (e.g. choose K for K-means when the Davies-Bouldin score is minimized), and the normalized cut algorithm can be refined by setting the label of small regions by sampling from neighbor pixels or using the label from neighbor nodes in the Region Adjacency Graph, rather than directly assigning to background. Besides, if time allows, we might make some attempts on unsupervised domain transfer based on neural models trained on similar tasks, which might allow better comparison with the supervised approaches.
+
 ## References
 * Chen, Liang-Chieh, George Papandreou, Florian Schroff, and Hartwig Adam. "Rethinking atrous convolution for semantic image segmentation." arXiv preprint arXiv:1706.05587 (2017).
 * He, Kaiming, Georgia Gkioxari, Piotr Dollár, and Ross Girshick. "Mask r-cnn." In Proceedings of the IEEE international conference on computer vision, pp. 2961-2969. 2017.
