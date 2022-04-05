@@ -110,7 +110,7 @@ Following the standard COCO evluation and the guideline from the AIcrowd Food Re
 | BBox   | 19.5                 | 40.9                 |
 | Mask   | 21.6                 | 42.2                 |
 
-Comparing the results we get to the state-of-the-art results on COCO datasets (AP of more than 40), the gap is still big (though we are using the same data). There are several possible reasons: 
+Comparing the results we get to the state-of-the-art results on COCO datasets (AP of more than 40), the gap is still big (though we are using different datasets and different domains). There are several possible reasons: 
 1. Instead of detecting people and cars in daily-life images, it is more challenging to correctly detect and segment food objects, due to the similar background, color, size and texture of food images.
 2. Non-optimal hyperparameters. Due to the limitation of computation, we haven't carefully tune the hyperparameter according to the validation set. Our device limits the maximum batch size we can try (no more than 4). Also, HTC nearly doubles the training time of mask R-CNN, which makes it even harder for us to find the optimal hyperparameters.
 
