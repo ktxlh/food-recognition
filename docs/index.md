@@ -28,6 +28,21 @@ Despite the fact that the ideal choice of each parameters vary a lot among image
 
 ### Supervised Instance Segmentation
 
+Supervised instance segmentation has three components: detection, classification, segmentation. In detection, model is trained to generate bounding boxes that contain objects. Given a bounding box, classification requires the model to predict which category does the bounded object belongs to. The segmentation step need models to give every pixel in the bounding box a label: whether this pixel belongs to the object.
+
+<p align="center">
+<img src="assets/maskrcnn.png" alt="drawing" height="100"/>
+</p>
+
+**Mask R-CNN** is the milestone of instance segmentation in this deep learning era. After using convolution networks to extract a feature map for the whole image, Region Proposal Network (RPN) uses sliding windows to output a set of rectangular object proposals (bounding box). For each candidate box, a Region-of-Interest (RoI) Pooling layer transforms its feature into a fixed size using maxpooling, then we feed it into a classifier and a regression model for object classification (for the classication step) and bounding box location (for the detection step). To further achieve the segmentation step, Mask R-CNN uses Fully Convolutional Network (FCN) to output a binary mask on each ROI, assigning a binary value to each pixel to indicate whether that pixel belongs the object.
+
+<p align="center">
+<img src="assets/cascade.png" alt="drawing" height="160"/>
+</p>
+
+**Our Approach** In this project, we use an improved version of Mask R-CNN, called **Hybrid Task Cascade** (HTC). Cascade is a classic idea that boosts model performance by multi-stage refinement. In our case, cascade could be implented by the step-by-step refinement of the bounding box. (i) *Bounding Box Cascade*: Note that the regression model after RoI pooling layer locate the bounding box given a region's feature, so HTC further use the output bounding box to form a region feature, then use the RoI pooling layer and the regression model to get a refined bounding box. (ii) *Segmentation Mask Cascade*: HTC introduces an information flow between masks by enabling generating refined binary masks conditioning on previously generated masks. (iii) *Auxiliary Semantic Segmentation*: To further help the masking process to distinguish the object and the background, HTC further leverages an extra semantic segmentation branch (also a FCN) to provide extra semantic information of the whole image, then let the mask generation process condition on the semantic information of each pixel.
+
+
 ### Evaluation
 We follow AIcrowd's evaluation method, which is COCO detection evaluation metrics. To be more specific, we evaluate the models by average precision (AP) and average recall (AR) with 0.5:0.05:0.95 Intersection over Union (IoU) threshold. For unsupervised methods, since they are generally unable to predict specific classes, we calculate the metric without taking the class labels into consideration. In other words, a segmentation proposal will be considered as a truth positive as long as it achieves higher IoU with any of the ground-truth of food instance segmentations than the threshold. Besides, we also assess the unsupervised segmentation results using internal clustering measures such as Probabilistic Random Index (PRI), Variation of Information (VoI), and Segmentation Covering.
 
