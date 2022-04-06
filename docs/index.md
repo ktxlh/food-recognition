@@ -55,8 +55,9 @@ According to the participation regulation of the challenge (Mohanty and Khandelw
 For K-means, we repeat the process by setting different k for cluster number and p for principle components to find a proper result. After evaluating several pictures by elbow methods, we find that most figures have a good performance for k = 8
 <img src="assets/kmean_elbow.png" width="400">
 
-From the evaluation of another unsupervised metric, calinski harabasz score, there is no obvious point that we can use the result to decide k. 
+From the evaluation of another unsupervised metric, Calinski Harabasz score, there is no obvious point that we can use the result to decide k. 
 <img src="assets/kmean_chscore.png" width="400">
+
 Thus, We decided to set our k = 8 and p = 10 for comparasion. 
 
 <img src="assets/kmean3.png" width="1000">
