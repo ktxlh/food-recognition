@@ -52,13 +52,17 @@ We expect supervised learning to perform better than unsupervised learning. This
 According to the participation regulation of the challenge (Mohanty and Khandelwal 2021), we will report both the score we computed on 100% of the publicly released test set, as well as the one evaluated by the contest system on 40% of an unreleased extended test set. -->
 
 ### K-means
-For K-means, we repeat the process by setting different k for cluster number and p for principle components to find a proper result. After evaluating several pictures by elbow methods, we find that most figures have a good performance for k = 8
+For K-means, we repeat the process by setting different k for cluster number and p for principle components to find a proper result. After evaluating several pictures by elbow methods, we find that most figures have a good performance for k = 8.
 
+<p align="center">
 <img src="assets/kmean_elbow.png" width="400">
+</p>
 
 From the evaluation of another unsupervised metric, Calinski Harabasz score, there is no obvious point that we can use the result to decide k. 
 
+<p align="center">
 <img src="assets/kmean_chscore.png" width="400">
+</p>
 
 Thus, We decided to set our k = 8 and p = 10 for comparasion. 
 
