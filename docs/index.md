@@ -6,8 +6,8 @@ Food is inseparable from our daily life. This project aims to recognize food obj
 
 ## Problem Definition
 Given an image containing food objects, for any given pixel, we want to (i) decide whether this pixel belongs to a food object, (ii) if belongs to a food object, we want to classify it using predefined categories. In the *unsupervised setting*, since there is no given label, we formalize it as a clustering problem: using clustering algorithms, we want to distinguish (i) food and its background (ii) different kinds of food at the pixel level by assigning pixels to different clusters. In the *supervised setting*, we follow the standard definition of instance segmentation: the model is first required to output a bounding box that contains the object and predict the object categories (in our case, this is food categories such as meat, bread, cheese...), then assign a label to every pixel in the bounding box indicating whether that pixel belongs to the object.
- 
- ## Data
+
+## Data
 Our dataset comes from AIcrowd Food Recognition Benchmark, an ongoing food recognition challenge provided by Seerave Foundation (Mohanty and Khandelwal 2021). **We directly use the data from its round-2 challenge**, which started in early March of 2022. AIcrowd released high quality annotated data for 498 food classes with 39,962 training samples and 76,491 food item annotations in MS-COCO format (Lin et al. 2014) for the 1st round of the challenge ("v2.0"). For the 2nd round ("v2.1"), they released a dataset containing a training set of 54,392 images of food items, with 100,256 annotations spread over 323 food classes. To fit our project to the challenge timeline, we mainly work with the v2.1 (round 2) data throughout this report.
  
 ## Methods
