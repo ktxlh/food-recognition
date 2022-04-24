@@ -91,7 +91,7 @@ With a low compactness setting in the oversegmentation step, pixels with similar
 The threshold for the n_cut algorithm basically determine when the iterative graph cut should terminate. Higher threshold will lead to early termination, which lead to higher number of segmentations. Setting a low threshold might be a generally better practice for the food instance segmentation problem, as we will not expect too fine-grained segmentation. However, setting a threshold that is too low might result in insufficient segmentation, and in extreme cases, labeling the full image into a single label when the contrast is not big enough.
 
 ### Mask R-CNN
-For Mask R-CNN, we manually tune the hyperparameters and train the model for 9 epochs. The effect of the prediction thresholds can be found in the following examples: Higher thresholds yield fewer bounding boxes. After inspecting a few images from validation set, we decide to set it to $0.15$.
+For Mask R-CNN, we manually tune the hyperparameters and train the model for 9 epochs. The effect of the prediction thresholds can be found in the following examples: Higher thresholds yield fewer bounding boxes. After inspecting a few images from validation set, we decide to set it to 0.15.
 The model can detect most objects from the example and segment them. Nonetheless, uncountable instances, such as fries, may be boxed multiple times, which lowers the precision. Some stacked instances may not be properly detected, such as the lettuce leaf on the steak.
 
 <p align="center">
@@ -133,7 +133,6 @@ Following the standard COCO evaluation and the guideline from the AIcrowd Food R
 
 **Mask R-CNN**
 
-Threshold = 0.3
 | Target | AP (IoU=.50:.05:.95) | AR (IoU=.50:.05:.95) |
 | ------ | -------------------- | -------------------- |
 | BBox   | 18.9                 | 39.0                 |
