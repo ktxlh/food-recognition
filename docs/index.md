@@ -76,6 +76,7 @@ Thus, We decided to set our k = 8 and p = 10 for comparasion.
 <img src="assets/kmean2.png" width="1000">
 
 From the figures, we can find that Kmeans preserve the boundary of the instances well and have a decent performance to filter out single food. However, the second figure makes it hard to detect bread and meat, which have similar colors even if they are far from each other. This is due to the natural fact of we use Kmeans to distinguish color instead of the distance between instances.  
+
 ### Normalized Cut
 As is described above, the normalized cut algorithm first use K-means to segment the image into a large number of superpixels, and then use the derived regions construct a similarity graph, after which recursive 2-way normalized cut is performed. Here gives a couple of samples output of the normalized cut algorithm, in the order of original image, superpixels, and final segmentation proposals (compactness=20, n_segments=400, ncut_thresh=.001). Each proposed region is displayed as the mean color of all pixels in the region.
 ![Result Sample 1](assets/ncut_1.png)
@@ -88,6 +89,17 @@ We further compared the segmentation results with different parameter setting.
 With a low compactness setting in the oversegmentation step, pixels with similar colors tend to be grouped together, rather than the pixels spatially closer to it. With a high compactness score, however, the resulting oversegmentation looks more like superpixels, as the spatial proximity highly overweigh the color similarity. Therefore, a medium compactness setup is needed for balancing the two, so as to pertain object boundaries and capture the main characteritics.
 ![ncut_thresh](assets/ncut_thresh.png)
 The threshold for the n_cut algorithm basically determine when the iterative graph cut should terminate. Higher threshold will lead to early termination, which lead to higher number of segmentations. Setting a low threshold might be a generally better practice for the food instance segmentation problem, as we will not expect too fine-grained segmentation. However, setting a threshold that is too low might result in insufficient segmentation, and in extreme cases, labeling the full image into a single label when the contrast is not big enough.
+
+### Mask R-CNN
+For Mask R-CNN, we manually tune the hyperparameters and train the model for 9 epochs. The effect of the prediction thresholds can be found in the following examples: Higher thresholds yield fewer bounding boxes. After inspecting a few images from validation set, we decide to set it to $0.15$.
+The model can detect most objects from the example and segment them. Nonetheless, uncountable instances, such as fries, may be boxed multiple times, which lowers the precision. Some stacked instances may not be properly detected, such as the lettuce leaf on the steak.
+
+<p align="center">
+<img src="assets/maskrcnn-1.png" width="1000">
+<img src="assets/maskrcnn-2.png" width="1000">
+<img src="assets/maskrcnn-3.png" width="1000">
+</p>
+
 
 ### Hybrid Task Cascade
 
@@ -119,6 +131,15 @@ For the potential next steps, the K-means algorithm can be refined by allowing a
 
 Following the standard COCO evaluation and the guideline from the AIcrowd Food Recognition Benchmark, we report the average precision (AP) and average recall(AR) for both bounding box and segmentation mask on the official validation set, while we further average the results varying Intersection over Union (IoU) value from 0.50 to 0.95 (step = 0.05).
 
+**Mask R-CNN**
+
+Threshold = 0.3
+| Target | AP (IoU=.50:.05:.95) | AR (IoU=.50:.05:.95) |
+| ------ | -------------------- | -------------------- |
+| BBox   | 18.9                 | 39.0                 |
+| Mask   | 21.0                 | 40.9                 |
+
+**Hybrid Task Cascade**
 
 | Target | AP (IoU=.50:.05:.95) | AR (IoU=.50:.05:.95) |
 | ------ | -------------------- | -------------------- |
