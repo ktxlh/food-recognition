@@ -180,3 +180,4 @@ For the possible next steps, we plan to leverage more recent instance segmentati
 * Long, Jonathan, Evan Shelhamer, and Trevor Darrell. "Fully convolutional networks for semantic segmentation." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 3431-3440. 2015.
 * Vu, Thang, Haeyong Kang, and Chang D. Yoo. "Scnet: Training inference sample consistency for instance segmentation." In Proceedings of the AAAI Conference on Artificial Intelligence, vol. 35, no. 3, pp. 2701-2709. 2021.
 * Wang, Xinlong, Tao Kong, Chunhua Shen, Yuning Jiang, and Lei Li. "Solo: Segmenting objects by locations." In European Conference on Computer Vision, pp. 649-665. Springer, Cham, 2020.
+* Liang-Chieh Chen, George Papandreou, Florian Schroff, and Hartwig Adam. 2017. Rethinking atrous convolution for semantic image segmentation. CoRR, abs/1706.05587.
