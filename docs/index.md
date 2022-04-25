@@ -11,7 +11,7 @@ Given an image containing food objects, for any given pixel, we want to (i) deci
 Our dataset comes from AIcrowd Food Recognition Benchmark, an ongoing food recognition challenge provided by Seerave Foundation (Mohanty and Khandelwal 2021). **We directly use the data from its round-2 challenge**, which started in early March of 2022. AIcrowd released high quality annotated data for 498 food classes with 39,962 training samples and 76,491 food item annotations in MS-COCO format (Lin et al. 2014) for the 1st round of the challenge ("v2.0"). For the 2nd round ("v2.1"), they released a dataset containing a training set of 54,392 images of food items, with 100,256 annotations spread over 323 food classes. To fit our project to the challenge timeline, we mainly work with the v2.1 (round 2) data throughout this report.
  
 ## Methods
-We implemented both unsupervised and supervised machine learning algorithms and compared their results. For unsupervised learning, we implemented a clustering-based method, K-means, and graph-based method, Normalized Cut. We used a color feature extractor through PCA for K-means, and a similar clustering-based pre-processing step for Normalized Cut to extract local information while reducing the computational complexity. As to supervised learning, we used Hybrid Task Cascade based on MaskRCNN (He et al. 2017), where no prior feature extraction is needed.
+We implemented both unsupervised and supervised machine learning algorithms and compared their results. For unsupervised learning, we implemented a clustering-based method, K-means, and graph-based method, Normalized Cut. We used a color feature extractor through PCA for K-means, and a similar clustering-based pre-processing step for Normalized Cut to extract local information while reducing the computational complexity. As to supervised learning, we used MaskRCNN, DeepLabv3 and Hybrid Task Cascade based on MaskRCNN (He et al. 2017), where no prior feature extraction is needed.
 ### Unsupervised Instance Segmentation
 #### K-means
 We first utilize k-means clustering to have a simple analysis of this problem. K-means aims to partition n observations into k clusters in which each observation belongs to the cluster with the nearest mean. The scikit-learn package minimizes within-cluster variances (squared Euclidean distances) to do the clustering. Besides running k-means on the raw images, we also evaluate the performance by preprocessing the figures to the compressed figures via extracting the color features through PCA.
@@ -41,6 +41,8 @@ Supervised instance segmentation has three components: detection, classification
 </p>
 
 **Mask R-CNN** is the milestone of instance segmentation in this deep learning era. After using convolution networks to extract a feature map for the whole image, Region Proposal Network (RPN, Ren et al., 2015) uses sliding windows to output a set of rectangular object proposals (bounding box). For each candidate box, a Region-of-Interest (RoI) Pooling layer (Girshick, 2015) transforms its feature into a fixed size using maxpooling, then we feed it into a classifier and a regression model for object classification (for the classication step) and bounding box location (for the detection step). To further achieve the segmentation step, Mask R-CNN uses Fully Convolutional Network (FCN, Long et al., 2015) to output a binary mask on each ROI, assigning a binary value to each pixel to indicate whether that pixel belongs the object.
+
+**DeepLabv3** (Chen et al., 2017) tries to solve two main issues in segmentation. The first issue is that Deep Convolutional Neural Networks reduce feature or image resolution while going to deeper layers due to convolution striding and pooling. The second challenge in segmentation tasks is facing difficulties recognizing multi-scale objects and classifying them as correct pixels. Facing the problems mentioned above, DeepLabvs uses Atrous Spatial Pyramid Pooling (ASPP) modules to capture multi-scale contexts. More specifically, It duplicates the last block in ResNet to connect in cascade and connect the ASPP module in parallel with multiple atrous rates. This strategy boosts the overall performance in segmentation tasks.
 
 <p align="center">
 <img src="assets/cascade.png" alt="drawing" height="160"/>
@@ -100,6 +102,13 @@ The model can detect most objects from the example and segment them. Nonetheless
 <img src="assets/maskrcnn-3.png" width="1000">
 </p>
 
+### DeepLabv3
+For DeepLabv3, we cropped images to a size of 300 while training to reduce the need for computational resources. The below figure is a selected result of DeepLabv3. The left column is the original input data. The middle row is the segmentation mask predicted by the DeepLabv3 model. The right column is a combination of two, which means simply merging input data with a predicted mask. The results show that it achieves better performance than MaskRCNN on recognizing sharp boundaries of objects. This can be clearly seen through the sample of fries; the model can classify fries pixels from the background plate nicely.
+
+
+<p align="center">
+<img src="assets/deeplabv3_results.png" width="1000">
+</p>
 
 ### Hybrid Task Cascade
 
@@ -144,6 +153,11 @@ Following the standard COCO evaluation and the guideline from the AIcrowd Food R
 | ------ | -------------------- | -------------------- |
 | BBox   | 19.5                 | 40.9                 |
 | Mask   | 21.6                 | 42.2                 |
+
+**DeepLabv3**
+| Target | AP (IoU=.50:.05:.95) | Pixel Accuracy       |
+| ------ | -------------------- | -------------------- |
+| Mask   | 22.5                 | 83.7                 |
 
 Comparing the results we get to the state-of-the-art results on COCO datasets (AP of more than 40), the gap is still big (though we are using different datasets and different domains). There are several possible reasons: 
 1. Instead of detecting people and cars in daily-life images, it is more challenging to correctly detect and segment food objects, due to the similar background, color, size, and texture of food images.
