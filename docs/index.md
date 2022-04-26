@@ -27,7 +27,7 @@ We also assessed graph-based segmentation techniques on this task. Specifically,
 
 We used scikit-learn/scikit-image for performing the K-means oversegmentation, generating the Region Adjacency Graph, solving the eigenproblem, performing the 2-way normalized cut, and visualizing the segmentation results. Specifically, there are several parameters that might impact the overall quality of the segmentation results:
 - compactness: Controls the balance between color proximity and space proximity in the oversegmentation step.
-- n_segments: Essentially serves as the $K$ in the K-means oversegmentation step.
+- n_segments: Essentially serves as the K in the K-means oversegmentation step.
 - ncut_threshold: Determines the stability requirement for the final graph partition.
   
 Despite the fact that the ideal choice of each parameters vary a lot among images with instances of different scales, we chose a generally suitable parameter set for evalution: compactness=20, n_segments=400, ncut_threshold=.0001.
@@ -56,8 +56,6 @@ Our Approach In this project, we use an improved version of Mask R-CNN, called H
 
 ## Results and Discussion
 <!-- This project follows AIcrowd’s evaluation method, which is COCO detection evaluation metrics. To be more specific, we will evaluate the models by average precision (AP) and average recall (AR) with 0.5:0.05:0.95 Intersection over Union (IoU) threshold.
- 
-We expect supervised learning to perform better than unsupervised learning. This is due to the robust feature extractor in modern deep neural networks. Moreover, labels provide models with important clues to learn better. 
  
 According to the participation regulation of the challenge (Mohanty and Khandelwal 2021), we will report both the score we computed on 100% of the publicly released test set, as well as the one evaluated by the contest system on 40% of an unreleased extended test set. -->
 
@@ -133,11 +131,9 @@ In supervised instance segmentation, we put the ground truth on the left, the pr
 
 For unsupervised methods, we generally follows the same evaluation metric as the standard supervised one, i.e. calculate AP and AR with IoU=0.50. since they are generally unable to predict specific classes, we calculate the metric without taking the class labels into consideration. In other words, a segmentation proposal will be considered as a truth positive as long as it achieves higher IoU with any of the ground-truth of food instance segmentations than the threshold. 
 
-We evaluate K-Means and Normalized Cut with a fixed set of parameters (for computational efficiency) on the full validation set (946 images). For K-Means with K=8 and P=10, inference on the validation set gives AP=0.2, AR=3.5, while Normalized Cut with compactness=20, n_segments=400, and thresh=.001 reports AP=1.7, AR=12.2. According to the reported metrics, Normalized Cut generally performs better than K-Means (with static parameter setting), which might because Normalized Cut better utilizes the spatial information of the data, and it is able to better preserve the boundaries between objects/instances.
+We evaluate K-Means and Normalized Cut with a fixed set of parameters (for computational efficiency) on the full public validation set (946 images). For K-Means with K=8 and P=10, inference on the validation set gives AP=0.2, AR=3.5, while Normalized Cut with compactness=20, n_segments=400, and thresh=.001 reports AP=1.7, AR=12.2. According to the reported metrics, Normalized Cut generally performs better than K-Means (with static parameter setting), which might because Normalized Cut better utilizes the spatial information of the data, and it is able to better preserve the boundaries between objects/instances.
 
-It's worth mentioning that the reported metrics for both unsupervised methods are below expectation (according to performance reports from prior works on similar tasks such as image sementic segmentation). This might because in our dataset, only food instances , and current implementations of the two unsupervised methods make no efforts to distinguish between the foreground and background, and thus might predict a lot more segmentations from the background (e.g. plate, hand, tableware, etc.), which might be a valid segmentation but not a true image instance. Also, since the evaluation module is directly adapted from pycocotools implementations for class-sensitive evaluations with minor modifications, more experiments should be conducted to investigate the correctness.
-
-For the potential next steps, the K-means algorithm can be refined by allowing adaptive parameter choosing (e.g. choose K for K-means when the Davies-Bouldin score is minimized), and the normalized cut algorithm can be refined by setting the label of small regions by sampling from neighbor pixels or using the label from neighbor nodes in the Region Adjacency Graph, rather than directly assigning to background. Besides, if time allows, we might make some attempts on unsupervised domain transfer based on neural models trained on similar tasks, which might allow better comparison with the supervised approaches.
+It's worth mentioning that the reported metrics for both unsupervised methods are below expectation (according to performance reports from prior works on similar tasks such as image sementic segmentation). This might because in our dataset, only food instances, and current implementations of the two unsupervised methods make no efforts to distinguish between the foreground and background, and thus might predict a lot more segmentations from the background (e.g. plate, hand, tableware, etc.), which might be a valid segmentation but not a true image instance. Also, since the evaluation module is directly adapted from pycocotools implementations for class-sensitive evaluations with minor modifications, more experiments could be conducted to investigate the correctness.　For potential future work, the K-means algorithm can be refined by allowing adaptive parameter choosing (e.g. choose K for K-means when the Davies-Bouldin score is minimized), and the normalized cut algorithm can be refined by setting the label of small regions by sampling from neighbor pixels or using the label from neighbor nodes in the Region Adjacency Graph, rather than directly assigning to background.
 
 #### Supervised Instance Segmentation
 
